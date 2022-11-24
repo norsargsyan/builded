@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - 'main'
+
+jobs:
+  build-css:
+    name: Build css file
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          node-version: 16
+          working-directory: web/themes/custom/needle
+
+      - name: Run gulp file
+        working-directory:
+          web/themes/custom/needle
+        run: |
+          npm ci --no-progress
+          npm run build --no-progress
+
+      - name: Add builded file to commit
+        working-directory:
+          web/themes/custom/needle
+        run: |
+          if  [[ `git check-ignore css/style.css` ]]; then     
+            git add --force -- css/style.css
+          fi   
+          if [[ `git status --porcelain css/style.css` ]]; then
+            git commit --amend --no-edit 
+          fi
+          git push -u -f
